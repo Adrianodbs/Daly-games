@@ -4,6 +4,49 @@ import Image from "next/image"
 import { redirect } from "next/navigation"
 import Label from "./components/label"
 import GameCard from "@/components/gameCard"
+import { Metadata } from "next"
+
+interface PropsParams{
+  params:{
+    id: string
+  }
+}
+
+// Essa função é responsável por colocar o título do jogo na aba
+export async function generateMetadata({params}:PropsParams): Promise<Metadata>{
+  try {
+    const response: GameProps = await fetch(`${process.env.NEXT_API_URL}/next-api/?api=game&id=${params.id}`, {cache: "no-store"})
+    .then((res=> res.json()))
+    .catch(()=>{
+      return{
+        title: "DalyGames"
+      }
+    })
+
+    return {
+      title: response.title,
+      description: `${response.description.slice(0, 100)}...`,
+      openGraph:{
+        title: response.title,
+        images: [response.image_url]
+      },
+      robots:{
+        index:true,
+        follow:true,
+        nocache:true,
+        googleBot:{
+          index:true,
+          follow:true,
+          noimageindex:true
+        }
+      }
+    }
+  } catch (error) {
+    return{
+      title: "DalyGames"
+    }
+  }
+}
 
 async function getData (id:string){
   try {
